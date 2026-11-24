@@ -182,6 +182,7 @@ const groundRaycaster = new THREE.Raycaster();
 const groundRayOrigin = new THREE.Vector3();
 const groundRayDirection = new THREE.Vector3(0, -1, 0);
 let navigationDebugPanel = null;
+let officeFloorY = null;
 
 const WORKSTATIONS = Object.freeze({
   'UserDesk-monitor': Object.freeze({
@@ -809,16 +810,18 @@ function setCharacterAnimation(controller, state, immediate = false) {
 
 function getOfficeGroundY(x, z, fallback = 0) {
   if (!officeEnvironment) return fallback;
+  if (officeFloorY !== null) return officeFloorY;
   groundRayOrigin.set(x, 20, z);
   groundRaycaster.set(groundRayOrigin, groundRayDirection);
-  // Select the highest walkable surface below the character. Meshy assets can
-  // contain underside/foundation triangles; choosing the lowest hit made the
-  // avatar appear to float or sink when crossing furniture islands.
+  // The office floor is flat. Sample the lowest surface at the first spawn
+  // point once, then keep that baseline so desk and chair tops cannot become
+  // accidental walkable ground.
   const hits = groundRaycaster.intersectObject(officeEnvironment, true)
     .filter(item => item.point.y < 2.2)
-    .sort((a, b) => b.point.y - a.point.y);
+    .sort((a, b) => a.point.y - b.point.y);
   const hit = hits[0];
-  return hit ? hit.point.y : fallback;
+  officeFloorY = hit ? hit.point.y : fallback;
+  return officeFloorY;
 }
 
 function keepCharacterOnGround(controller) {
