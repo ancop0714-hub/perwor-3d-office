@@ -1,0 +1,89 @@
+{
+  "source": "perwor-character-pack.gltf",
+  "variants": [
+    {
+      "rootNode": 6,
+      "name": "marketer-female",
+      "role": "마케터",
+      "gender": "female"
+    },
+    {
+      "rootNode": 13,
+      "name": "marketer-male",
+      "role": "마케터",
+      "gender": "male"
+    },
+    {
+      "rootNode": 20,
+      "name": "associate-female",
+      "role": "회사원·대리",
+      "gender": "female"
+    },
+    {
+      "rootNode": 27,
+      "name": "associate-male",
+      "role": "회사원·대리",
+      "gender": "male"
+    },
+    {
+      "rootNode": 34,
+      "name": "doctor-female",
+      "role": "의사",
+      "gender": "female"
+    },
+    {
+      "rootNode": 41,
+      "name": "doctor-male",
+      "role": "의사",
+      "gender": "male"
+    },
+    {
+      "rootNode": 48,
+      "name": "teacher-female",
+      "role": "선생님",
+      "gender": "female"
+    },
+    {
+      "rootNode": 55,
+      "name": "teacher-male",
+      "role": "선생님",
+      "gender": "male"
+    },
+    {
+      "rootNode": 62,
+      "name": "designer-female",
+      "role": "디자이너",
+      "gender": "female"
+    },
+    {
+      "rootNode": 69,
+      "name": "designer-male",
+      "role": "디자이너",
+      "gender": "male"
+    },
+    {
+      "rootNode": 76,
+      "name": "developer-female",
+      "role": "개발자",
+      "gender": "female"
+    },
+    {
+      "rootNode": 83,
+      "name": "developer-male",
+      "role": "개발자",
+      "gender": "male"
+    },
+    {
+      "rootNode": 90,
+      "name": "analyst-female",
+      "role": "데이터 분석가",
+      "gender": "female"
+    },
+    {
+      "rootNode": 97,
+      "name": "analyst-male",
+      "role": "데이터 분석가",
+      "gender": "male"
+    }
+  ]
+}

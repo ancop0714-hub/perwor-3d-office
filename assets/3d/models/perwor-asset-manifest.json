@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-11-02T15:14:52.891Z",
+  "models": [
+    {
+      "id": "character-pack",
+      "gltf": "./perwor-character-pack.gltf",
+      "glb": "./perwor-character-pack.glb",
+      "usage": "Spline import: job and gender variants are named nodes."
+    },
+    {
+      "id": "plant-stages",
+      "gltf": "./perwor-plant-stages.gltf",
+      "glb": "./perwor-plant-stages.glb",
+      "usage": "Spline import: stage nodes are named plant-stage-0 through plant-stage-6."
+    }
+  ],
+  "referenceSheets": [
+    "../references/perwor-character-3d-sheet-v1.png",
+    "../references/perwor-plant-growth-sheet-v1.png",
+    "../../icons/perwor-learning-icons-3d-sheet-v1.png"
+  ]
+}

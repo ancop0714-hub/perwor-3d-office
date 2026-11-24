@@ -1,0 +1,9 @@
+{
+  "asset": "perwor-rigged-soldier.glb",
+  "source": "https://threejs.org/examples/models/gltf/Soldier.glb",
+  "purpose": "Temporary rigged motion pipeline validation for Perwor Three.js migration",
+  "availableAnimations": ["Idle", "Run", "TPose", "Walk"],
+  "fallbackMotionStates": ["typing", "nod", "speaking", "watering"],
+  "licenseNote": "Keep the upstream three.js example attribution and verify redistribution terms before production use.",
+  "replacementPlan": "Replace this technical rig with Perwor reference-gallery character GLB assets after custom rigging and animation export."
+}
