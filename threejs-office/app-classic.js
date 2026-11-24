@@ -178,6 +178,10 @@ let pointerDown = null;
 let pointerDragged = false;
 let lastPointerWasDrag = false;
 const NAV_DEBUG = new URLSearchParams(window.location.search).get('navDebug') === '1';
+const groundRaycaster = new THREE.Raycaster();
+const groundRayOrigin = new THREE.Vector3();
+const groundRayDirection = new THREE.Vector3(0, -1, 0);
+let navigationDebugPanel = null;
 
 const WORKSTATIONS = Object.freeze({
   'UserDesk-monitor': Object.freeze({
@@ -627,7 +631,7 @@ function createOfficeObjects() {
   const userDesk = new THREE.Group();
   userDesk.name = 'UserDeskInteractionAnchor';
   userDesk.position.set(3.3, 0, 1.5);
-  userDesk.monitor = interactionProxy('UserDesk-Monitor-HitTarget', [1.35, 1.1, .45], [3.3, 1.45, 1.05], 'UserDesk-monitor', '모니터', 'monitor');
+  userDesk.monitor = interactionProxy('UserDesk-Monitor-HitTarget', [2.05, 1.65, .9], [3.3, 1.35, 1.05], 'UserDesk-monitor', '모니터', 'monitor');
   userDesk.monitor.userData.workstationId = 'personal-workstation-01';
   userDesk.monitor.userData.hoverMarker = createInteractionMarker(WORKSTATIONS['UserDesk-monitor'].standingPosition);
   personalWorkstationHighlight = createPersonalMonitorHighlight(WORKSTATIONS['UserDesk-monitor'].monitorPosition);
@@ -757,6 +761,8 @@ function setupCharacterAnimations(controller, gltf) {
   controller.animationSource = clips.length ? 'gltf-plus-fallback-clips' : 'fallback-clips';
   controller.availableClips = clips.map(clip => clip.name);
   controller.fallbackStates = fallbackStates;
+  controller.animationSource = clips.length ? 'gltf-plus-fallback-clips' : 'fallback-clips';
+  controller.root.userData.availableClips = controller.availableClips;
   controller.bones = {};
   ['Hips', 'Spine', 'Spine1', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'Head', 'Neck', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand'].forEach(name => {
     const bone = controller.model.getObjectByName('mixamorig:' + name) || controller.model.getObjectByName(name);
@@ -798,6 +804,53 @@ function setCharacterAnimation(controller, state, immediate = false) {
   controller.activeAction = next;
   controller.state = state;
   controller.root.userData.animationState = state;
+  controller.root.userData.activeClip = next.getClip?.().name || next._clip?.name || state;
+}
+
+function getOfficeGroundY(x, z, fallback = 0) {
+  if (!officeEnvironment) return fallback;
+  groundRayOrigin.set(x, 20, z);
+  groundRaycaster.set(groundRayOrigin, groundRayDirection);
+  // Select the highest walkable surface below the character. Meshy assets can
+  // contain underside/foundation triangles; choosing the lowest hit made the
+  // avatar appear to float or sink when crossing furniture islands.
+  const hits = groundRaycaster.intersectObject(officeEnvironment, true)
+    .filter(item => item.point.y < 2.2)
+    .sort((a, b) => b.point.y - a.point.y);
+  const hit = hits[0];
+  return hit ? hit.point.y : fallback;
+}
+
+function keepCharacterOnGround(controller) {
+  if (!controller?.model || !controller.root) return;
+  const groundY = getOfficeGroundY(controller.root.position.x, controller.root.position.z, 0);
+  const bounds = new THREE.Box3().setFromObject(controller.model);
+  const correction = groundY - bounds.min.y;
+  if (Math.abs(correction) > .0005) controller.root.position.y += correction;
+  controller.groundY = groundY;
+  controller.root.userData.groundY = groundY;
+  controller.root.userData.feetY = bounds.min.y + correction;
+}
+
+function createNavigationDebugPanel() {
+  if (!NAV_DEBUG) return;
+  navigationDebugPanel = document.createElement('pre');
+  navigationDebugPanel.id = 'navigationDebugPanel';
+  Object.assign(navigationDebugPanel.style, { position: 'absolute', right: '12px', bottom: '56px', zIndex: '20', margin: '0', padding: '10px', maxWidth: '320px', borderRadius: '10px', background: 'rgba(20,30,45,.86)', color: '#d8f3e8', font: '11px/1.45 ui-monospace, monospace', pointerEvents: 'none', whiteSpace: 'pre-wrap' });
+  document.body.appendChild(navigationDebugPanel);
+}
+
+function updateNavigationDebugPanel() {
+  if (!navigationDebugPanel || !userController) return;
+  const c = userController;
+  navigationDebugPanel.textContent = [
+    'NAV DEBUG',
+    `state: ${c.state}`,
+    `clip: ${c.root.userData.activeClip || 'none'}`,
+    `pos: ${c.root.position.x.toFixed(2)}, ${c.root.position.y.toFixed(2)}, ${c.root.position.z.toFixed(2)}`,
+    `ground: ${(c.groundY ?? 0).toFixed(3)} feet: ${(c.root.userData.feetY ?? 0).toFixed(3)}`,
+    `queue: ${c.queue.length} seated: ${c.seated}`,
+  ].join('\n');
 }
 
 function animateRiggedPose(controller, time) {
@@ -1510,6 +1563,7 @@ function animateCharacters(time, delta) {
     if (!character.model) return;
     if (character.mixer) character.mixer.update(delta);
     animateRiggedPose(character, time);
+    keepCharacterOnGround(character);
     if (character.seated || character.seating) applySeatedPose(character, character.seating ? Math.min(1, character.seating.elapsed / character.seating.duration) : 1);
     character.root.userData.position = { x: character.root.position.x, y: character.root.position.y, z: character.root.position.z };
     character.root.userData.rotation = character.root.rotation.y;
@@ -1692,7 +1746,9 @@ function render() {
     controls.target.lerp(targetGoal, 1 - Math.exp(-delta * 4.2));
   }
   updatePersonalWorkstationOverlay(elapsed);
+  updateNavigationDebugPanel();
   renderer.render(scene, camera);
 }
 
+createNavigationDebugPanel();
 boot();
