@@ -167,6 +167,7 @@ let selectedWorkstation = null;
 let navigationPurpose = null;
 let autoPatrol = false;
 let patrolIndex = 0;
+let returnFromLearning = false;
 let hoverMarker = null;
 let personalWorkstationHighlight = null;
 let personalHighlightState = 'hidden';
@@ -958,6 +959,28 @@ function resetOfficeCamera() {
   controls.update();
 }
 
+function frameUserAtEntrance(controller) {
+  if (!controller?.root) return;
+  controller.root.rotation.y = Math.PI;
+  const position = controller.root.position;
+  camera.position.set(position.x, 3.2, position.z + 5.8);
+  controls.target.set(position.x, 1.05, position.z - 2.4);
+  camera.lookAt(controls.target);
+  cameraFollowEnabled = true;
+  controls.update();
+}
+
+function frameUserFrontOnReturn(controller) {
+  if (!controller?.root) return;
+  controller.root.rotation.y = 0;
+  const position = controller.root.position;
+  camera.position.set(position.x, 2.9, position.z + 5.4);
+  controls.target.set(position.x, 1.0, position.z);
+  camera.lookAt(controls.target);
+  cameraFollowEnabled = true;
+  controls.update();
+}
+
 function setMode(nextMode) {
   mode = nextMode;
   selectedObject = null;
@@ -1232,6 +1255,7 @@ function restoreReturnPosition(controller) {
     controller.seated = false;
     sessionStorage.removeItem('perwor-selected-workstation');
     setStatus('이전 업무 자리 앞에 도착했습니다 · 모니터를 선택해 업무를 시작하세요.');
+    returnFromLearning = true;
     showToast('업무 자리로 돌아왔어요');
     return true;
   } catch {
@@ -1584,7 +1608,10 @@ async function boot() {
     const restoredFromWorkstation = restoreReturnPosition(user);
     if (!restoredFromWorkstation) {
       cameraFollowEnabled = false;
-      setStatus('Meshy 오피스 준비 완료 · 3인칭으로 사무실을 확인하고 모니터를 선택하세요.');
+      frameUserAtEntrance(user);
+      setStatus('입구 도착 · 오피스 안쪽을 바라보고 있습니다. WASD/방향키로 이동하세요.');
+    } else {
+      frameUserFrontOnReturn(user);
     }
     if (SHOW_PLACEHOLDER_STAFF) {
       await Promise.all([
@@ -1603,6 +1630,8 @@ async function boot() {
     const fallbackStates = [...new Set(characters.flatMap(character => character.fallbackStates || []))];
     if (!restoredFromWorkstation) setStatus('Meshy textured 오피스 준비 완료 · 사용자 캐릭터 ' + (riggedCount ? '연결' : '대기') + ' · 모니터 선택으로 업무 시작');
     setMode('office');
+    if (!restoredFromWorkstation) frameUserAtEntrance(user);
+    else frameUserFrontOnReturn(user);
     renderer.setAnimationLoop(render);
   } catch (error) {
     console.error('[Perwor 3D] boot failed', error);
