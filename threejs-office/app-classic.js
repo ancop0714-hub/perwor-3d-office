@@ -181,6 +181,12 @@ const NAV_DEBUG = new URLSearchParams(window.location.search).get('navDebug') ==
 const groundRaycaster = new THREE.Raycaster();
 const groundRayOrigin = new THREE.Vector3();
 const groundRayDirection = new THREE.Vector3(0, -1, 0);
+const collisionRaycaster = new THREE.Raycaster();
+const collisionRayOrigin = new THREE.Vector3();
+const collisionRayDirections = Array.from({ length: 8 }, (_, index) => {
+  const angle = index * Math.PI / 4;
+  return new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
+});
 let navigationDebugPanel = null;
 let officeFloorY = null;
 
@@ -847,6 +853,11 @@ function normalizeCharacterMaterials(model) {
         material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
         material.emissiveMap.needsUpdate = true;
       }
+      material.transparent = false;
+      material.opacity = 1;
+      if (!material.map && material.color && material.color.r < .03 && material.color.g < .03 && material.color.b < .03) {
+        material.color.set('#b8b8b8');
+      }
       material.needsUpdate = true;
     });
   });
@@ -1049,7 +1060,15 @@ function moveToward(controller, target, delta) {
 
 function isBlocked(x, z, radius = .35) {
   if (x < -9.2 || x > 9.2 || z < -9.2 || z > 9.2) return true;
-  return obstacles.some(o => Math.abs(x - o.x) < o.halfX + radius && Math.abs(z - o.z) < o.halfZ + radius);
+  if (obstacles.some(o => Math.abs(x - o.x) < o.halfX + radius && Math.abs(z - o.z) < o.halfZ + radius)) return true;
+  if (!officeEnvironment) return false;
+  collisionRayOrigin.set(x, .78, z);
+  for (const direction of collisionRayDirections) {
+    collisionRaycaster.set(collisionRayOrigin, direction);
+    const hit = collisionRaycaster.intersectObject(officeEnvironment, true)[0];
+    if (hit && hit.distance < radius + .18 && hit.point.y > .2 && hit.point.y < 1.8) return true;
+  }
+  return false;
 }
 
 function resetOfficeCamera() {
