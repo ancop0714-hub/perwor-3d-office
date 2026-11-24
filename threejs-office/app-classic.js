@@ -678,6 +678,15 @@ async function loadMeshyOfficeEnvironment() {
       model.position.y -= bounds.min.y;
       scene.add(model);
       officeEnvironment = model;
+      // Establish the flat office floor from the entry point before any
+      // staff or user character can request grounding. This prevents a desk
+      // top from becoming the global floor baseline.
+      groundRayOrigin.set(ENTRY_POSITION.x, 20, ENTRY_POSITION.z);
+      groundRaycaster.set(groundRayOrigin, groundRayDirection);
+      const entryFloorHits = groundRaycaster.intersectObject(officeEnvironment, true)
+        .filter(item => item.point.y < 2.2)
+        .sort((a, b) => a.point.y - b.point.y);
+      officeFloorY = entryFloorHits[0]?.point.y ?? 0;
       window.__perworMeshyOffice = {
         source: meshyOfficeUrl,
         dimensions: { x: size.x, y: size.y, z: size.z },
@@ -704,7 +713,8 @@ function loadRiggedCharacterPack() {
 
 const animationAliases = {
   idle: ['Idle', 'idle'],
-  walk: ['Walk', 'Walking', 'Run', 'Running'],
+  // Do not use a running clip for office navigation.
+  walk: ['Walk', 'Walking'],
   sit: ['Sit', 'Sitting', 'Seated', 'SitIdle'],
   celebrate: ['Celebrate', 'Wave', 'ThumbUp', 'TPose'],
   listening: ['Idle', 'Survey'],
@@ -824,6 +834,24 @@ function getOfficeGroundY(x, z, fallback = 0) {
   return officeFloorY;
 }
 
+function normalizeCharacterMaterials(model) {
+  model.traverse(node => {
+    if (!node.isMesh) return;
+    const materials = Array.isArray(node.material) ? node.material : [node.material];
+    materials.filter(Boolean).forEach(material => {
+      if (material.map) {
+        material.map.colorSpace = THREE.SRGBColorSpace;
+        material.map.needsUpdate = true;
+      }
+      if (material.emissiveMap) {
+        material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+        material.emissiveMap.needsUpdate = true;
+      }
+      material.needsUpdate = true;
+    });
+  });
+}
+
 function keepCharacterOnGround(controller) {
   if (!controller?.model || !controller.root) return;
   const groundY = getOfficeGroundY(controller.root.position.x, controller.root.position.z, 0);
@@ -858,13 +886,21 @@ function updateNavigationDebugPanel() {
 
 function animateRiggedPose(controller, time) {
   if (!controller.bones) return;
-  const customStates = new Set(['typing', 'nod', 'speaking', 'watering', 'celebrate']);
+  const customStates = new Set(['walk', 'typing', 'nod', 'speaking', 'watering', 'celebrate']);
   if (!customStates.has(controller.state)) return;
   const bones = controller.bones;
   const base = controller.baseBoneRotations;
   Object.keys(base).forEach(name => bones[name].rotation.copy(base[name]));
   const phase = time + controller.phase;
-  if (controller.state === 'typing') {
+  if (controller.state === 'walk') {
+    const stride = Math.sin(phase * 7.5) * .42;
+    if (bones.LeftUpLeg) bones.LeftUpLeg.rotation.x = base.LeftUpLeg.x + stride;
+    if (bones.RightUpLeg) bones.RightUpLeg.rotation.x = base.RightUpLeg.x - stride;
+    if (bones.LeftLeg) bones.LeftLeg.rotation.x = base.LeftLeg.x - Math.max(0, stride) * .55;
+    if (bones.RightLeg) bones.RightLeg.rotation.x = base.RightLeg.x + Math.max(0, stride) * .55;
+    if (bones.LeftArm) bones.LeftArm.rotation.x = base.LeftArm.x - stride * .35;
+    if (bones.RightArm) bones.RightArm.rotation.x = base.RightArm.x + stride * .35;
+  } else if (controller.state === 'typing') {
     const beat = Math.sin(phase * 10);
     if (bones.LeftArm) bones.LeftArm.rotation.x = base.LeftArm.x - .22;
     if (bones.RightArm) bones.RightArm.rotation.x = base.RightArm.x - .22;
@@ -934,6 +970,7 @@ async function loadCharacter(id, role, genderValue, position, staffRole, targetH
     model.position.set(0, 0, 0);
     model.rotation.set(0, 0, 0);
     model.name = id + '-Model';
+    normalizeCharacterMaterials(model);
     model.traverse(node => {
       if (node.isMesh) {
         node.castShadow = true;
@@ -960,7 +997,7 @@ async function loadCharacter(id, role, genderValue, position, staffRole, targetH
       base: root.position.clone(),
       target: root.position.clone(),
       phase: Math.random() * 6.28,
-      speed: .95,
+      speed: .68,
       queue: [],
       collisionRadius: .36,
       groundAnchorY: 0,
@@ -979,7 +1016,7 @@ async function loadCharacter(id, role, genderValue, position, staffRole, targetH
     setStatus(staffRole + ' 모델을 불러오지 못했습니다. 에셋 경로를 확인해 주세요.', true);
     root.userData.loadError = true;
     scene.add(root);
-    const controller = { id, root, model: null, staffRole, state: 'error', base: root.position.clone(), target: root.position.clone(), phase: 0, speed: .95, queue: [], collisionRadius: .36, groundAnchorY: 0, shadowPosition: root.position.clone(), seating: null, seated: false };
+    const controller = { id, root, model: null, staffRole, state: 'error', base: root.position.clone(), target: root.position.clone(), phase: 0, speed: .68, queue: [], collisionRadius: .36, groundAnchorY: 0, shadowPosition: root.position.clone(), seating: null, seated: false };
     root.userData.controller = controller;
     characters.push(controller);
     return controller;
