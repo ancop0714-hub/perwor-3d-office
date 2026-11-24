@@ -1,0 +1,17 @@
+{
+  "asset": "Meshy_AI_Pastel_Garden_Office_1117142039_texture.glb",
+  "source": "C:\\Users\\문형주\\Desktop\\perwor\\메시 ai\\Meshy_AI_Pastel_Garden_Office_1117142039_texture.glb",
+  "sourceModified": "2026-11-17T23:21:03+09:00",
+  "bytes": 16650976,
+  "sha256": "9C2410FCA593C327EBD01131154120F1EF0682246E4A612B256F02D967D3BE7A",
+  "importAudit": {
+    "meshObjects": 1,
+    "vertices": 190514,
+    "polygons": 322422,
+    "materials": 1,
+    "embeddedTextureImages": 3,
+    "textureResolution": "2048x2048",
+    "texturesPacked": true
+  },
+  "use": "Load directly with Three.js GLTFLoader. Do not recolor, flatten, project, or re-export."
+}
