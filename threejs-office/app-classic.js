@@ -675,11 +675,10 @@ async function loadMeshyOfficeEnvironment() {
 }
 
 const characterPackUrl = '../assets/3d/models/perwor-character-pack.glb';
-const riggedCharacterUrl = '../assets/3d/models/rigged/perwor-rigged-soldier.glb';
-// The old staff models are kept in the project for later replacement, but are
-// intentionally not mounted over the final office environment in this pass.
-// This prevents the robot-like placeholders from being mistaken for Meshy
-// office content while preserving their movement/state-machine code.
+const riggedCharacterUrl = '../assets/3d/models/female-meshy.glb';
+// Use the user's Meshy female character as the visible office avatar. The GLB
+// is a static mesh, so the existing root movement/state machine remains active
+// while skeletal animation is supplied by the lightweight fallback motions.
 const SHOW_PLACEHOLDER_STAFF = false;
 let riggedCharacterPromise;
 function loadRiggedCharacterPack() {
