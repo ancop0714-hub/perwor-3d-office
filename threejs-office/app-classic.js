@@ -192,6 +192,7 @@ const WORKSTATIONS = Object.freeze({
     firstPersonTarget: new THREE.Vector3(3.3, 1.22, 1.18),
   }),
 });
+const ENTRY_POSITION = Object.freeze({ x: -5.5, z: 4.8 });
 
 function setOfficeState(next, detail = {}) {
   officeState = next;
@@ -640,6 +641,13 @@ function createOfficeObjects() {
   scene.add(growthPlant);
   // Keep movement bounds aligned to the scaled Meshy office footprint.
   addObstacle(3.3, 1.5, 1.0, .65);
+  // Conservative collision volumes for the visible Meshy office furniture.
+  // They keep the avatar on the walkable aisles without hiding the GLB.
+  addObstacle(-4.2, -0.75, 1.75, .78);
+  addObstacle(-.4, -0.75, 1.75, .78);
+  addObstacle(-.4, 2.35, 1.55, .72);
+  addObstacle(5.9, 1.0, 1.35, 1.15);
+  addObstacle(6.4, -3.15, 1.55, 1.0);
   return userDesk;
 }
 
@@ -934,7 +942,13 @@ function moveToward(controller, target, delta) {
   }
   direction.normalize();
   const step = controller.speed * delta;
-  controller.root.position.addScaledVector(direction, Math.min(step, direction.length()));
+  const distance = Math.min(step, direction.length());
+  const nextX = controller.root.position.x + direction.x * distance;
+  const nextZ = controller.root.position.z + direction.z * distance;
+  // Resolve each axis separately so the avatar slides around desks instead
+  // of tunnelling through them when a frame is long or the route is diagonal.
+  if (!isBlocked(nextX, controller.root.position.z, controller.collisionRadius)) controller.root.position.x = nextX;
+  if (!isBlocked(controller.root.position.x, nextZ, controller.collisionRadius)) controller.root.position.z = nextZ;
   controller.root.rotation.y = Math.atan2(direction.x, direction.z);
   controller.state = 'walk';
   return false;
@@ -1282,6 +1296,18 @@ function handleInteraction(interaction) {
   }
 }
 
+function handleWorkstationKey() {
+  if (mode !== 'office' || !userController || userController.seated) return;
+  const workstation = WORKSTATIONS['UserDesk-monitor'];
+  const distance = userController.root.position.distanceTo(workstation.standingPosition);
+  if (distance <= 1.65) {
+    beginWorkstationNavigation(workstation, 'monitor');
+  } else {
+    showToast('내 자리 가까이에서 E키를 눌러 주세요.');
+    setStatus('내 자리 표시를 따라 이동한 뒤 E키를 눌러 업무를 시작하세요.');
+  }
+}
+
 function findInteraction(object) {
   let current = object;
   while (current) {
@@ -1389,6 +1415,10 @@ window.addEventListener('keydown', event => {
       setCharacterAnimation(userController, 'walk');
       setStatus('직접 이동 중 · 자동 이동이 취소됐습니다.');
     }
+  }
+  if (event.key === 'e' || event.key === 'E') {
+    event.preventDefault();
+    handleWorkstationKey();
   }
   if (event.key === 'Escape') {
     if (officeState === OFFICE_STATES.OFFICE_AUTO_NAVIGATION || officeState === OFFICE_STATES.WORKSTATION_ARRIVAL || officeState === OFFICE_STATES.CHARACTER_SEATING) cancelOfficeNavigation('manual');
@@ -1602,7 +1632,7 @@ async function boot() {
     const userDesk = createOfficeObjects();
     loadingText.textContent = '최종 Meshy 오피스 GLB를 불러오는 중…';
     await loadMeshyOfficeEnvironment();
-    const user = await loadCharacter('UserCharacter', userModelRole, gender, [0, 5.1], '사용자 캐릭터', 1.95);
+    const user = await loadCharacter('UserCharacter', userModelRole, gender, [ENTRY_POSITION.x, ENTRY_POSITION.z], '사용자 캐릭터', 1.95);
     userController = user;
     user.target = new THREE.Vector3(3.3, 0, 1.5);
     const restoredFromWorkstation = restoreReturnPosition(user);
