@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3e9dc">
+  <title>Perwor · 워크스테이션 허브</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, Pretendard, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --ink:#172640; --muted:#667891; }
+    * { box-sizing: border-box; }
+    html, body { min-height:100%; margin:0; background:#f3e9dc; color:var(--ink); }
+    body { min-height:100vh; overflow:auto; }
+    button { font:inherit; cursor:pointer; }
+    .hub-page { min-height:100vh; display:grid; place-items:center; padding:24px; }
+    .hub-stage { position:relative; width:min(100%,1536px,calc((100vh - 48px) * 1.5)); aspect-ratio:1536 / 1024; overflow:hidden; border-radius:24px; background:#efd9c1; box-shadow:0 22px 70px rgba(55,43,31,.22); }
+    .hub-reference { position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:fill; user-select:none; -webkit-user-drag:none; }
+    .hub-chip, .hub-office { position:absolute; z-index:3; top:2.4%; border:1px solid rgba(255,255,255,.86); border-radius:999px; background:rgba(255,255,255,.9); color:var(--ink); box-shadow:0 7px 22px rgba(47,60,79,.14); backdrop-filter:blur(10px); }
+    .hub-chip { left:2.2%; padding:11px 17px; font-size:clamp(10px,1vw,16px); font-weight:900; letter-spacing:.06em; }
+    .hub-office { right:2.2%; padding:11px 16px; font-size:clamp(10px,1vw,16px); font-weight:800; }
+    .hub-action { position:absolute; z-index:4; display:flex; align-items:center; justify-content:center; min-height:7%; border:2px solid rgba(255,255,255,.94); border-radius:999px; color:#fff; font-weight:900; font-size:clamp(11px,1.25vw,19px); box-shadow:0 9px 26px rgba(35,55,107,.26),0 0 0 5px rgba(255,255,255,.18); transition:transform .16s ease, filter .16s ease, box-shadow .16s ease; }
+    .hub-action:hover, .hub-action:focus-visible { filter:brightness(1.06); transform:translateY(-2px) scale(1.015); outline:none; box-shadow:0 12px 30px rgba(35,55,107,.3),0 0 0 7px rgba(255,255,255,.28); }
+    .hub-action:active { transform:translateY(1px) scale(.985); }
+    .hub-action:disabled { cursor:wait; opacity:.62; }
+    .hub-speaking { left:30%; top:44%; width:40%; background:linear-gradient(145deg,#6685ee,#4a62d3); }
+    .hub-typing { left:28%; bottom:10.5%; width:44%; background:linear-gradient(145deg,#4fcdb7,#329787); }
+    .hub-status { position:absolute; z-index:5; left:50%; bottom:2.4%; transform:translateX(-50%); margin:0; width:max-content; max-width:88%; padding:9px 15px; border-radius:999px; background:rgba(23,38,64,.86); color:#fff; font-size:clamp(10px,1vw,15px); font-weight:750; text-align:center; }
+    .hub-icon { width:1.35em; height:1.35em; margin-right:.48em; flex:none; vertical-align:-.28em; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .hub-icon--keyboard { stroke-width:1.65; }
+    @media (max-width:680px) {
+      .hub-page { display:block; padding:0; }
+      .hub-stage { width:100vw; border-radius:0; }
+      .hub-chip, .hub-office { top:1.7%; padding:7px 10px; font-size:clamp(8px,2vw,11px); }
+      .hub-action { font-size:clamp(9px,2.5vw,13px); }
+      .hub-speaking { left:18%; top:43%; width:64%; }
+      .hub-typing { left:17%; bottom:8%; width:66%; }
+      .hub-status { bottom:2%; font-size:clamp(8px,2vw,11px); }
+    }
+  </style>
+</head>
+<body>
+  <main class="hub-page" data-workstation-hub>
+    <section class="hub-stage" aria-label="Perwor 1인칭 워크스테이션 허브">
+      <img class="hub-reference" src="../assets/3d/scenes/first-person-typing/perwor-scene-first-person-typing-v1.png" alt="Perwor 원본 파스텔 1인칭 업무 공간">
+      <div class="hub-chip">PERWOR · WORKSTATION HUB</div>
+      <button class="hub-office" type="button" data-hub-office>오피스로 돌아가기</button>
+      <button class="hub-action hub-speaking" type="button" data-hub-speaking>
+        <svg class="hub-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="3" y="6.5" width="12.5" height="11" rx="2"></rect>
+          <path d="m15.5 10 5-2.8v9.6l-5-2.8z"></path>
+        </svg>
+        <span>화상통화 영어 말하기 시작</span>
+      </button>
+      <button class="hub-action hub-typing" type="button" data-hub-typing>
+        <svg class="hub-icon hub-icon--keyboard" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="2.5" y="5.5" width="19" height="13" rx="2"></rect>
+          <path d="M5.5 9h.01M8.5 9h.01M11.5 9h.01M14.5 9h.01M17.5 9h.01M5.5 12h.01M8.5 12h.01M11.5 12h.01M14.5 12h.01M17.5 12h.01M5.5 15h7M14.5 15h4"></path>
+        </svg>
+        <span>타이핑 문서 작업 시작</span>
+      </button>
+      <p class="hub-status" data-hub-status>키보드 또는 모니터에서 학습을 선택하세요.</p>
+    </section>
+  </main>
+  <script src="./workstation-hub.js?v=1762612015"></script>
+  <script src="./workstation-coffee-steam.js?v=1762612619"></script>
+  <script src="./workstation-lamp-glow.js?v=1762615111"></script>
+  <script src="./workstation-monitor-motion.js?v=1762615311"></script>
+</body>
+</html>

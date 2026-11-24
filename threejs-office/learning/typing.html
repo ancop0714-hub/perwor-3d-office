@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3e9dc">
+  <title>Perwor · 오늘의 영어 타이핑</title>
+  <link rel="stylesheet" href="./typing.css?v=1762612015">
+</head>
+<body data-perwor-route="typing" data-renderer="function-first">
+  <main class="typing-page">
+    <section class="typing-screen" data-typing-dedicated aria-label="Perwor 독립 영어 타이핑 학습">
+      <header class="typing-topbar">
+        <div>
+          <p class="typing-kicker">PERWOR · DEDICATED LEARNING</p>
+          <h1 class="typing-title">오늘의 영어 타이핑</h1>
+          <p class="typing-subtitle">영어 지문을 직접 입력하고 속도와 정확도를 확인해보세요.</p>
+        </div>
+        <button class="typing-back" type="button" data-back-office data-return-url="../workstation-hub.html">워크스테이션으로 돌아가기</button>
+      </header>
+      <article class="typing-card">
+        <div class="typing-card-head"><h2>오늘의 업무 지문</h2><span class="typing-badge">실시간 학습</span></div>
+        <div class="loading" data-typing-loading aria-live="polite">
+          <span data-typing-loading-message>실제 타이핑 학습 지문을 불러오는 중…</span>
+          <button class="loading-retry" type="button" data-typing-retry hidden>지문 다시 불러오기</button>
+        </div>
+        <div class="typing-prompt" data-typing-prompt hidden>
+          <div class="dedicated-source" data-typing-source></div>
+          <label class="dedicated-input-label" for="dedicatedTypingInput">영어 문장을 그대로 입력하세요.
+            <textarea id="dedicatedTypingInput" class="typing-input" data-typing-input spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="여기에 영어 지문을 입력하세요."></textarea>
+          </label>
+          <div class="metrics" aria-label="실시간 타이핑 지표">
+            <div class="metric"><b data-metric="wpm">0</b><small>실시간 WPM</small></div>
+            <div class="metric"><b data-metric="accuracy">0%</b><small>정확도</small></div>
+            <div class="metric"><b data-metric="errors">0</b><small>오타 수</small></div>
+            <div class="metric"><b data-metric="elapsed">00:00</b><small>경과 시간</small></div>
+          </div>
+          <div class="action-row"><span class="status" data-typing-status>영어 지문을 읽고 입력을 시작하세요.</span><button class="complete" type="button" data-typing-complete disabled>연습 완료</button></div>
+        </div>
+        <div class="typing-result" data-typing-result hidden></div>
+        <span class="activity" data-typing-activity aria-live="polite">입력 감지</span>
+      </article>
+    </section>
+  </main>
+  <script src="../learning-bridge.js?v=1762612200"></script>
+  <script src="../article-enrichment.js?v=1762612200"></script>
+  <script src="../typing-image-prototype.js?v=1762612110"></script>
+  <script src="./typing.js?v=1762612110"></script>
+</body>
+</html>
