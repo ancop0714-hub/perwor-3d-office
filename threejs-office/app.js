@@ -689,10 +689,10 @@ async function loadMeshyOfficeEnvironment() {
 }
 
 const characterPackUrl = '../assets/3d/models/perwor-character-pack.glb';
-const riggedCharacterUrl = '../assets/3d/models/female-meshy.glb';
-// Use the user's Meshy female character as the visible office avatar. The GLB
-// is a static mesh, so the existing root movement/state machine remains active
-// while skeletal animation is supplied by the lightweight fallback motions.
+const riggedCharacterUrl = '../assets/3d/models/rigged/meshy-office-doll-mixamo.glb';
+// Use the Mixamo-rigged Meshy doll for grounded locomotion. Its Walking and
+// Running clips drive the visible limbs while the root controller handles
+// office navigation and collision-aware movement.
 const SHOW_PLACEHOLDER_STAFF = false;
 let riggedCharacterPromise;
 function loadRiggedCharacterPack() {
