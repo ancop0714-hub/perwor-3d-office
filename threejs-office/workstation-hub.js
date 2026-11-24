@@ -28,7 +28,7 @@
   });
   officeButton.addEventListener('click', event => {
     event.preventDefault();
-    go('./phase1.html?scene=office', '오피스로 돌아갑니다.');
+    go('./?scene=office', '오피스로 돌아갑니다.');
   });
 
   global.__perworWorkstationHub = { routes: { typing: './learning/typing.html', speaking: './learning/speaking.html' }, isolated: true };
