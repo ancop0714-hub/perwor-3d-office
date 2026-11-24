@@ -1561,7 +1561,8 @@ async function boot() {
     renderer.setAnimationLoop(render);
   } catch (error) {
     console.error('[Perwor 3D] boot failed', error);
-    loadingText.textContent = '3D 공간을 초기화하지 못했습니다. 콘솔 오류를 확인해 주세요.';
+    const detail = error && error.message ? ' · ' + error.message : '';
+    loadingText.textContent = '3D 공간을 초기화하지 못했습니다.' + detail;
     setStatus('3D 오피스 초기화 실패', true);
   }
 }
