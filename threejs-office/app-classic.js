@@ -685,7 +685,7 @@ async function loadMeshyOfficeEnvironment() {
       groundRaycaster.set(groundRayOrigin, groundRayDirection);
       const entryFloorHits = groundRaycaster.intersectObject(officeEnvironment, true)
         .filter(item => item.point.y < 2.2)
-        .sort((a, b) => a.point.y - b.point.y);
+        .sort((a, b) => b.point.y - a.point.y);
       officeFloorY = entryFloorHits[0]?.point.y ?? 0;
       window.__perworMeshyOffice = {
         source: meshyOfficeUrl,
