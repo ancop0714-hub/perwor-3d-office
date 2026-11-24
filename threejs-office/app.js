@@ -169,6 +169,8 @@ let transitionDispatched = false;
 let transitionWorkstation = null;
 let selectedWorkstation = null;
 let navigationPurpose = null;
+let autoPatrol = false;
+let patrolIndex = 0;
 let hoverMarker = null;
 let personalWorkstationHighlight = null;
 let personalHighlightState = 'hidden';
@@ -227,7 +229,7 @@ function setupDailyTaskPanel() {
   const notice = welcomePanel.querySelector('.notice');
   if (notice) notice.remove();
   const walkButton = document.querySelector('#toggleWalk');
-  if (walkButton) walkButton.textContent = '자리로 이동';
+  if (walkButton) walkButton.textContent = '오피스 둘러보기';
 
   let taskList = welcomePanel.querySelector('.daily-task-list');
   if (!taskList) {
@@ -966,6 +968,8 @@ function setMode(nextMode) {
   setPersonalHighlightState(nextMode === 'office' ? 'normal' : 'hidden');
   if (nextMode === 'office') {
     autoWalk = false;
+    autoPatrol = false;
+    patrolIndex = 0;
     navigationPurpose = null;
     if (userController) {
       userController.queue = [];
@@ -1077,6 +1081,8 @@ function buildNavigationPath(start, destination) {
 
 function cancelOfficeNavigation(reason = 'manual') {
   autoWalk = false;
+  autoPatrol = false;
+  patrolIndex = 0;
   navigationPurpose = null;
   if (userController) {
     userController.queue = [];
@@ -1102,6 +1108,8 @@ function beginWorkstationNavigation(workstation, purpose = 'monitor') {
   selectedWorkstation = workstation;
   navigationPurpose = purpose;
   autoWalk = route.length > 0;
+  autoPatrol = false;
+  patrolIndex = 0;
   userController.queue = route;
   userController.seated = false;
   userController.seating = null;
@@ -1380,6 +1388,25 @@ function updateUser(delta) {
     return;
   }
   if (officeState === OFFICE_STATES.FIRST_PERSON_TRANSITION || mode !== 'office') return;
+  if (autoPatrol && !autoWalk) {
+    const patrolPoints = [
+      new THREE.Vector3(-5.5, 0, 3.9),
+      new THREE.Vector3(-1.2, 0, 3.9),
+      new THREE.Vector3(1.15, 0, 3.9),
+      new THREE.Vector3(1.15, 0, 1.9),
+      new THREE.Vector3(-1.5, 0, 1.9),
+      new THREE.Vector3(-4.8, 0, 1.9),
+    ];
+    const patrolTarget = patrolPoints[patrolIndex % patrolPoints.length];
+    if (!userController.queue.length) {
+      const route = buildNavigationPath(userController.root.position, patrolTarget);
+      if (route.length) {
+        userController.queue = route;
+        autoWalk = true;
+        setCharacterAnimation(userController, 'walk');
+      } else patrolIndex = (patrolIndex + 1) % patrolPoints.length;
+    }
+  }
   if (autoWalk && userController.queue.length) {
     const next = userController.queue[0];
     if (moveToward(userController, next, delta)) {
@@ -1388,6 +1415,12 @@ function updateUser(delta) {
         autoWalk = false;
         const purpose = navigationPurpose;
         navigationPurpose = null;
+        if (autoPatrol) {
+          patrolIndex = (patrolIndex + 1) % 6;
+          setCharacterAnimation(userController, 'idle');
+          setStatus('오피스를 둘러보는 중입니다 · 내 자리를 선택하면 착석합니다.');
+          return;
+        }
         if (purpose === 'monitor') {
           beginWorkstationArrival();
         } else {
@@ -1503,8 +1536,20 @@ function updatePersonalWorkstationOverlay(time) {
 }
 
 function startAutoWalk() {
-  const workstation = WORKSTATIONS['UserDesk-monitor'];
-  if (workstation) beginWorkstationNavigation(workstation, 'monitor');
+  if (!userController) return;
+  autoWalk = false;
+  autoPatrol = true;
+  patrolIndex = 0;
+  navigationPurpose = null;
+  userController.queue = [];
+  userController.seating = null;
+  userController.seated = false;
+  cameraFollowEnabled = true;
+  setPersonalHighlightState('normal');
+  setOfficeState(OFFICE_STATES.OFFICE_AUTO_NAVIGATION, { purpose: 'patrol' });
+  setCharacterAnimation(userController, 'walk');
+  setStatus('오피스를 둘러보는 중입니다 · 내 자리를 선택하면 착석합니다.');
+  showToast('오피스 둘러보기 시작');
 }
 
 setupDailyTaskPanel();
